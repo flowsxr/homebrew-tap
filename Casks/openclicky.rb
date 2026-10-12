@@ -1,6 +1,6 @@
 cask "openclicky" do
-  version "0.8.5"
-  sha256 "66fe87496980d90bcc646d9518e0b190ffb28d0481108a7c9f24282e58e8cf13"
+  version "0.8.6"
+  sha256 "5b84789c42766864c413e3a620aaf172afc92f376b563670093e5ce0763d41b7"
 
   url "https://github.com/prasanthsasikumar/openclicky/releases/download/v#{version}/OpenClicky-#{version}.dmg"
   name "OpenClicky"
@@ -21,6 +21,7 @@ cask "openclicky" do
     "~/Library/Application Support/OpenClicky",
     "~/Library/Application Support/org.openclicky.app",
     "~/Library/Caches/org.openclicky.app",
+    "~/Library/Caches/org.openclicky.app.sparkle",
     "~/Library/HTTPStorages/org.openclicky.app",
     "~/Library/HTTPStorages/org.openclicky.app.binarycookies",
     "~/Library/Preferences/org.openclicky.app.plist",
