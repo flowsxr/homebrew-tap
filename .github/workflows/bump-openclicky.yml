@@ -5,6 +5,11 @@ name: Bump OpenClicky
 
 on:
   workflow_dispatch:
+    inputs:
+      check:
+        description: Install and check the current cask even when there is no new release
+        type: boolean
+        default: false
   schedule:
     - cron: "17 */6 * * *"
 
@@ -47,10 +52,13 @@ jobs:
           brew style Casks/openclicky.rb
 
       - name: Install it and check it is notarized
-        if: steps.latest.outputs.changed == 'true'
+        if: steps.latest.outputs.changed == 'true' || inputs.check
+        env:
+          CHANGED: ${{ steps.latest.outputs.changed }}
         run: |
           set -euo pipefail
-          git -c user.name=ci -c user.email=ci@localhost commit -qam "local"
+          [[ "$CHANGED" == true ]] || git -c user.name=ci -c user.email=ci@localhost commit -q --allow-empty -m "local"
+          [[ "$CHANGED" != true ]] || git -c user.name=ci -c user.email=ci@localhost commit -qam "local"
           brew tap prasanthsasikumar/tap "$GITHUB_WORKSPACE"
           brew install --cask prasanthsasikumar/tap/openclicky
           spctl --assess --type execute -vv /Applications/OpenClicky.app 2>&1 | tee "$RUNNER_TEMP/spctl.txt"
