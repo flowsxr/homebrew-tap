@@ -1,0 +1,69 @@
+# Keeps Casks/openclicky.rb on OpenClicky's latest release. scripts/release.sh --publish starts it
+# right after a release; the schedule catches anything that start missed. The cask changes only
+# after the new dmg has installed here and Gatekeeper calls it notarized.
+name: Bump OpenClicky
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
+
+concurrency: bump-openclicky
+
+jobs:
+  bump:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find the latest release
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="$(gh release view --repo prasanthsasikumar/openclicky --json tagName --jq .tagName)"
+          version="${tag#v}"
+          current="$(sed -n 's/^  version "\(.*\)"$/\1/p' Casks/openclicky.rb)"
+          echo "latest $version, cask $current"
+          [[ "$version" =~ ^[0-9]+(\.[0-9]+)+$ ]] || { echo "unexpected tag $tag" >&2; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "changed=$([[ "$version" != "$current" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Update the cask
+        if: steps.latest.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          set -euo pipefail
+          url="https://github.com/prasanthsasikumar/openclicky/releases/download/v$VERSION/OpenClicky-$VERSION.dmg"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/OpenClicky.dmg" "$url"
+          sha="$(shasum -a 256 "$RUNNER_TEMP/OpenClicky.dmg" | cut -d' ' -f1)"
+          sed -i '' -E "s/^  version \".*\"$/  version \"$VERSION\"/; s/^  sha256 \".*\"$/  sha256 \"$sha\"/" Casks/openclicky.rb
+          git diff
+          brew style Casks/openclicky.rb
+
+      - name: Install it and check it is notarized
+        if: steps.latest.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          git -c user.name=ci -c user.email=ci@localhost commit -qam "local"
+          brew tap prasanthsasikumar/tap "$GITHUB_WORKSPACE"
+          brew install --cask prasanthsasikumar/tap/openclicky
+          spctl --assess --type execute -vv /Applications/OpenClicky.app 2>&1 | tee "$RUNNER_TEMP/spctl.txt"
+          grep -q "source=Notarized Developer ID" "$RUNNER_TEMP/spctl.txt"
+          brew uninstall --cask prasanthsasikumar/tap/openclicky
+          git reset -q --soft HEAD~1
+
+      - name: Commit
+        if: steps.latest.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.latest.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git commit -qam "openclicky $VERSION"
+          git push
