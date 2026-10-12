@@ -53,12 +53,9 @@ jobs:
 
       - name: Install it and check it is notarized
         if: steps.latest.outputs.changed == 'true' || inputs.check
-        env:
-          CHANGED: ${{ steps.latest.outputs.changed }}
         run: |
           set -euo pipefail
-          [[ "$CHANGED" == true ]] || git -c user.name=ci -c user.email=ci@localhost commit -q --allow-empty -m "local"
-          [[ "$CHANGED" != true ]] || git -c user.name=ci -c user.email=ci@localhost commit -qam "local"
+          git -c user.name=ci -c user.email=ci@localhost commit -qa --allow-empty -m "local"
           brew tap prasanthsasikumar/tap "$GITHUB_WORKSPACE"
           brew install --cask prasanthsasikumar/tap/openclicky
           spctl --assess --type execute -vv /Applications/OpenClicky.app 2>&1 | tee "$RUNNER_TEMP/spctl.txt"
