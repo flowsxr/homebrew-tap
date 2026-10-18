@@ -1,6 +1,6 @@
 cask "openclicky" do
-  version "0.9.0"
-  sha256 "349774d6ade8d2de26e8e6a4471abb92aa4497d9a4a0268711e4b308c9b0ab5c"
+  version "0.9.1"
+  sha256 "345c5845560de7ecde4259eca3f76f3e3994badf9e25df5c7e8cc7f490e25875"
 
   url "https://github.com/prasanthsasikumar/openclicky/releases/download/v#{version}/OpenClicky-#{version}.dmg"
   name "OpenClicky"
