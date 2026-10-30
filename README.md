@@ -1,6 +1,6 @@
 # homebrew-tap
 
-Homebrew casks for [OpenClicky](https://openclicky.flowsxr.com), the free, open-source voice assistant for macOS.
+Homebrew casks for [OpenClicky](https://openclicky.org), the free, open-source voice assistant for macOS.
 
     brew install --cask flowsxr/tap/openclicky
 

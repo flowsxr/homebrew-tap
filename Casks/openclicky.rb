@@ -5,7 +5,7 @@ cask "openclicky" do
   url "https://github.com/prasanthsasikumar/openclicky/releases/download/v#{version}/OpenClicky-#{version}.dmg"
   name "OpenClicky"
   desc "Voice assistant that points at the answer on your screen and dictates anywhere"
-  homepage "https://openclicky.flowsxr.com/"
+  homepage "https://openclicky.org/"
 
   livecheck do
     url :url
